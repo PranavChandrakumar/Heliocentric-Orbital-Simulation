@@ -4,16 +4,6 @@ import math
 from pygame.locals import QUIT
 import pygame_gui
 
-class PlanetButton(pygame_gui.elements.UIButton):
-    def __init__(self, relative_rect, text, manager, container, planet_data, app):
-        super().__init__(relative_rect, text, manager, container)
-        self.planet_data = planet_data
-        self.app = app
-
-    def disable(self):
-        self.visible = False
-        self.enabled = False
-
 class SolarSystemApp:
     def __init__(self, planets):
         pygame.init()
@@ -27,9 +17,7 @@ class SolarSystemApp:
         self.planets = planets
         self.current_planet = None
         self.slider_value = 1  # Default value
-        self.planet_buttons = []  # Store planet buttons
         self.show_planet_gui = False  # Flag to control whether to show the planet GUI
-        self.legend_panel = None  # Initialize the legend_panel attribute
 
         self.create_gui()
 
@@ -39,9 +27,9 @@ class SolarSystemApp:
             planet["path"] = []
 
             # Initialize the orbital path
-            for j in range(0, 361):
-                x = int(self.width // 2 + planet["distance"] * math.cos(math.radians(j)))
-                y = int(self.height // 2 + planet["distance"] * math.sin(math.radians(j)))
+            for j in range(0, 360):
+                x = int(self.width / 2 + planet["distance"] * math.cos(math.radians(j)))
+                y = int(self.height / 2 + planet["distance"] * math.sin(math.radians(j)))
                 planet["path"].append((x, y))
 
             # Close the path by appending the starting point
@@ -51,82 +39,24 @@ class SolarSystemApp:
 
     def create_gui(self):
         self.manager = pygame_gui.UIManager((self.width, self.height))
-        self.legend_panel = None  # Add this line
-
         slider_rect = pygame.Rect(10, 10, 200, 20)
         self.slider = pygame_gui.elements.UIHorizontalSlider(
             relative_rect=slider_rect,
             start_value=1,
-            value_range=(0.0, 100),
+            value_range=(0, 100), #only int values
             manager=self.manager
         )
 
-        label_rect = pygame.Rect(220, 10, 50, 20)
+        label_rect = pygame.Rect(220, 10, 220, 20)
         self.label = pygame_gui.elements.UILabel(
             relative_rect=label_rect,
-            text="50",
+            text="1 Year",
             manager=self.manager
         )
-
-        # Add legend
-        legend_rect = pygame.Rect(10, self.height - 50, self.width - 20, 40)
-        self.legend_panel = pygame_gui.elements.UIPanel(
-            relative_rect=legend_rect,
-            starting_layer_height=2,
-            manager=self.manager
-        )
-
-        for i, planet_data in enumerate(self.planets):
-            label_rect = pygame.Rect(10 + i * 80, 10, 80, 20)
-            planet_button = PlanetButton(
-                relative_rect=label_rect,
-                text=planet_data['name'],
-                manager=self.manager,
-                container=self.legend_panel,
-                planet_data=planet_data,
-                app=self
-            )
-            planet_button.bg_color = pygame.Color(planet_data['color'])  # Set background color
-
-            # Workaround to set text color
-            planet_button.image.set_colorkey((0, 0, 0))  # Set black as transparent
-            planet_button.image = planet_button.image.convert_alpha()
-            planet_button.image.fill(pygame.Color(planet_data['color']), special_flags=pygame.BLEND_RGBA_MULT)
-
-            self.planet_buttons.append(planet_button)
-
-        # Add Real Time button
-        button_rect = pygame.Rect(280, 10, 100, 20)
-        self.real_time_button = pygame_gui.elements.UIButton(
-            relative_rect=button_rect,
-            text="1 Day/tick",
-            manager=self.manager
-        )
-
-        # Add Back to Solar System button (initially hidden)
-        back_button_rect = pygame.Rect(400, 10, 150, 20)
-        self.back_button = pygame_gui.elements.UIButton(
-            relative_rect=back_button_rect,
-            text="Back to Solar System",
-            manager=self.manager
-        )
-        self.back_button.disable()
-
-    def show_planet_gui(self, planet_button):
-        # Function to create a new GUI with the clicked planet as the center
-        self.current_planet = planet_button.planet_data
-        self.show_planet_gui = True
-        for planet_button in self.planet_buttons:
-            planet_button.disable()
-        self.back_button.enable()
-
-    def set_slider_to_real_time(self):
-        # Function to set the slider to a specific value (0.003 in this case)
-        self.slider.set_current_value(0.003)
 
     def update_positions(self):
         while True:
-            time_increment = self.slider.get_current_value() * (3.154e7)  # Use slider's current value
+            time_increment = self.slider.get_current_value() *  (2*math.pi)/(29.8 / (149.6 * 10e5)) # Use slider's current value, multiply by the amount of time to get one full rotation of earth
 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -135,18 +65,6 @@ class SolarSystemApp:
 
                 # Process events for the GUI manager
                 self.manager.process_events(event)
-
-                if event.type == pygame.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.real_time_button:
-                        self.set_slider_to_real_time()
-
-                    elif event.ui_element == self.back_button:
-                        # Show the planet buttons and hide the back button
-                        for planet_button in self.planet_buttons:
-                            planet_button.enable()
-                        self.back_button.disable()
-                        self.current_planet = None
-                        self.show_planet_gui = False
 
             self.screen.fill((0, 0, 0))
 
@@ -165,7 +83,7 @@ class SolarSystemApp:
                     if self.show_planet_gui and self.current_planet and planet != self.current_planet:
                         continue  # Skip planets if showing a specific planet in the center
 
-                    planet["angle"] += time_increment * planet["orbital_ratio"]
+                    planet["angle"] += time_increment * planet["orbital_ratio"] #Problem is somewhere here 
 
                     x = int(self.width / 2 + planet["distance"] * math.cos(math.radians(planet["angle"])))
                     y = int(self.height / 2 + planet["distance"] * math.sin(math.radians(planet["angle"])))
@@ -177,7 +95,7 @@ class SolarSystemApp:
             self.manager.draw_ui(self.screen)
 
             # Update the label text with the current slider value
-            self.label.set_text(f"{int(self.slider.get_current_value())}")
+            self.label.set_text(f"{int(self.slider.get_current_value())} Earth Years per Second")
 
             pygame.display.flip()
             self.clock.tick(60)
@@ -195,5 +113,5 @@ if __name__ == "__main__":
     ]
 
     app = SolarSystemApp(planets_data)
-    app.create_gui()  # Move GUI creation outside of the update loop
-    app.update_positions()
+    #app.create_gui()  # Move GUI creation outside of the update loop
+    #app.update_positions()
