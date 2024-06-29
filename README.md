@@ -1,4 +1,4 @@
-Welcome to my Heliocentric Orbital Simulation!
+Welcome to a Heliocentric Orbital Simulation!
 
 This is a 2-D visualization of all of the planets within our Solar System, with a integrated adjustment tool to change simulation speed.
 
