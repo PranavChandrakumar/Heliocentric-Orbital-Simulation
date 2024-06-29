@@ -8,14 +8,13 @@ class SolarSystemApp:
     def __init__(self, planets):
         pygame.init()
 
-        self.width, self.height = 800, 1000
+        self.width, self.height = 800, 1000 #GUI dimensions
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Solar System Simulation")
 
         self.clock = pygame.time.Clock()
 
         self.planets = planets
-        self.current_planet = None
         self.slider_value = 1  # Default value
         self.show_planet_gui = False  # Flag to control whether to show the planet GUI
 
@@ -68,13 +67,13 @@ class SolarSystemApp:
 
             self.screen.fill((0, 0, 0))
 
-            # Draw a small yellow circle at the center to represent the sun
-            pygame.draw.circle(self.screen, pygame.Color("Yellow"), (self.width // 2, self.height // 2), 10)
+            # Draw a small yellow circle at the center to represent the Sun
+            pygame.draw.circle(self.screen, pygame.Color("Yellow"), (self.width / 2, self.height / 2), 10)
 
             if self.show_planet_gui and self.current_planet:
                 # Draw the clicked planet at the center
-                x = self.width // 2
-                y = self.height // 2
+                x = self.width / 2
+                y = self.height / 2
                 pygame.draw.circle(self.screen, pygame.Color(self.current_planet["color"]), (x, y), 5)
 
             else:
@@ -83,7 +82,7 @@ class SolarSystemApp:
                     if self.show_planet_gui and self.current_planet and planet != self.current_planet:
                         continue  # Skip planets if showing a specific planet in the center
 
-                    planet["angle"] += time_increment * planet["orbital_ratio"] #Problem is somewhere here 
+                    planet["angle"] += time_increment * planet["orbital_ratio"] 
 
                     x = int(self.width / 2 + planet["distance"] * math.cos(math.radians(planet["angle"])))
                     y = int(self.height / 2 + planet["distance"] * math.sin(math.radians(planet["angle"])))
@@ -101,7 +100,7 @@ class SolarSystemApp:
             self.clock.tick(60)
 
 if __name__ == "__main__":
-    planets_data = [
+    planets_data = [ # These values are published online and available through nasa.gov
         {"name": "Mercury", "distance": 40, "color": "Gray", "orbital_ratio": (47.4 / (57.9 * 10e5))},
         {"name": "Venus", "distance": 80, "color": "Orange", "orbital_ratio": (35 / (108.2 * 10e5))},
         {"name": "Earth", "distance": 120, "color": "Blue", "orbital_ratio": (29.8 / (149.6 * 10e5))},
@@ -113,5 +112,4 @@ if __name__ == "__main__":
     ]
 
     app = SolarSystemApp(planets_data)
-    #app.create_gui()  # Move GUI creation outside of the update loop
-    #app.update_positions()
+    
